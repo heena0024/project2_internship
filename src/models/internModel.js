@@ -9,7 +9,7 @@ const internSchema = new mongoose.Schema({
             validator: function (email) {
                 return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
             }, message: 'Please fill a valid email address', isAsync: false,
-            unique: true
+            unique: true, required: true
         }
     },
     mobile: {
@@ -23,8 +23,10 @@ const internSchema = new mongoose.Schema({
     collegeId: {
         type: ObjectId,
         ref: 'College',
-        isDeleted: { type: Boolean, default: false }
-    }
+        required:true
+    },
+    isDeleted: { type: Boolean, default: false }
+
 }, { timestamps: true })
 
 module.exports = mongoose.model('Intern', internSchema)
