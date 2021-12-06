@@ -1,6 +1,6 @@
 const collegeModel = require("../models/collegeModel");
 const internModel = require("../models/internModel");
-const validator = require("../utils/validator");
+const validator = require("../validator/validator");
 
 
 //POST /functionup/colleges
@@ -12,30 +12,29 @@ const createCollege = async function (req, res) {
 
         } else {
 
-            //USING OBJECT DESTRUCT METHOD HERE
+            //USING OBJECT DESTRUCTION METHOD HERE
             const { name, fullName, logoLink } = data;
 
             if (!validator.isValid(name)) {
-                return res.status(404).send({ status: false, message: 'Name is mandatory' })
-
+                return res.status(404).send({ status: false, message: 'Name is mandatory. Please enter a valid name to create an entry.' })
             }
+
             if (!validator.isValid(fullName)) {
-                return res.status(404).send({ status: false, message: 'FullName is mandatory' })
-
+                return res.status(404).send({ status: false, message: 'FullName is required. Please enter a valid college name to create an entry.' })
             }
+
             if (!validator.isValid(logoLink)) {
-                return res.status(404).send({ status: false, message: 'Please Provide The Logo' })
-
+                return res.status(404).send({ status: false, message: 'Logo link not found. Please provide the logo link to create an entry' })
             }
+
             const isNameAlreadyUsed = await collegeModel.findOne({ name });
             if (isNameAlreadyUsed) {
-                return res.status(400).send({ status: false, message: `${name} is already in created` });
+                return res.status(400).send({ status: false, message: `${name} is already in used` });
             }
 
             //saving data in database
             let savedData = await collegeModel.create(data);
             return res.status(201).send({ status: true, message: "College saved Successfully", data: savedData });
-
         }
     } catch (error) {
         return res.status(500).send({ status: false, message: "Something went wrong", error: error.message });
@@ -47,38 +46,40 @@ const createCollege = async function (req, res) {
 const getCollegeDetails = async function (req, res) {
     try {
         let collegeName = req.query.collegeName
-        let college = await collegeModel.findOne({ name: collegeName });
-        if (!college) {
-            res.status(404).send({ status: false, msg: "No college found" })
-            return
-        } else {
-            let checkId = college._id;
-            let name = college.name;
-            let fullName = college.fullName;
-            let collegeLink = college.logoLink;
-            let InternsApplied = await internModel.find({ collegeId: checkId }).select({ _id: 1, name: 1, email: 1, mobile: 1 });
-            if (!InternsApplied) {
-                res.status(404).send({ status: false, msg: "No Interns found" })
+        if (!collegeName) return res.status(404).send({ status: false, message: "Query not found, Please provide a valid query to fetch details" })
+        else {
+            let college = await collegeModel.findOne({ name: collegeName });
+            if (!college) {
+                res.status(404).send({ status: false, message: "Please provide a valid college name to search interns." })
                 return
             } else {
-                let Data = {
-                    name: name,
-                    fullName: fullName,
-                    logoLink: collegeLink,
-                    interests: InternsApplied
+                
+                let checkId = college._id;
+                let name = college.name;
+                let fullName = college.fullName;
+                let logoLink = college.logoLink;
 
+                let InternsApplied = await internModel.find({ collegeId: checkId }).select({ _id: 1, name: 1, email: 1, mobile: 1 });
+                
+                if (!InternsApplied.length > 0) {
+                    res.status(404).send({ status: false, message: "No interns applied for this college" })
+                    return
+                } else {
+                    let Data = {
+                        name: name,
+                        fullName: fullName,
+                        logoLink: logoLink,
+                        interests: InternsApplied
+                    }
+                    res.status(200).send({ status: true, message: "Successfully fetched all interns details with this college.", data: Data })
                 }
-                res.status(200).send({ status: true, data: Data })
-
             }
-
         }
     }
     catch (error) {
         return res.status(500).send({ status: false, message: "Something went wrong", error: error.message });
     }
 }
-
 
 module.exports.createCollege = createCollege;
 module.exports.getCollegeDetails = getCollegeDetails;

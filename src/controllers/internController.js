@@ -1,54 +1,44 @@
 const collegeModel = require("../models/collegeModel");
 const internModel = require("../models/internModel");
-const mongoose = require('mongoose');
-const validator = require("../utils/validator");
-
-
+const validator = require("../validator/validator");
 
 //POST/functionup/interns
 const createIntern = async function (req, res) {
     try {
         let data = req.body;
         if (!validator.isValidRequestBody(data)) {
-            return res.status(404).send({ status: false, message: "No intern details given" });
-
+            return res.status(404).send({ status: false, message: "No intern details given. Please provide an intern's details to proceed further." });
         } else {
-
             //USING OBJECT DESTRUCT METHOD HERE
             const { name, email, mobile, collegeId } = data;
 
             if (!validator.isValid(name)) {
-                return res.status(400).send({ status: false, message: 'Name  is mandatory' })
-
+                return res.status(404).send({ status: false, message: 'Name is required. Please provide a valid name.' })
             }
+
             if (!validator.isValid(email)) {
-                return res.status(400).send({ status: false, message: 'Email Id is mandatory' })
-
+                return res.status(404).send({ status: false, message: 'Email Id is required. Please provide a valid email address.' })
             }
-
-            //EMAIL VALIDATION
-
-            // if(!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
-            //     res.status(400).send({status: false, message: `Email should be a valid email address`})
-            //     return
-            // }
 
             if (!validator.isValid(mobile)) {
-                return res.status(404).send({ status: false, message: 'Mobile number is mandatory' })
+                return res.status(404).send({ status: false, message: 'Mobile number is required. Please provide a valid mobile number' })
+            }
 
+            if (!validator.isValidObjectId(collegeId)) {
+                return res.status(404).send({ status: false, message: 'The College Id is invalid. Please enter a valid college Id.' })
+            }
+
+             //EMAIL VALIDATION
+            if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
+                return res.status(400).send({ status: false, message: `Email is not valid. Please provide a valid Email address.` })
             }
 
             //MOBILE VALIDATION
-
-            // if(!(/^(\+\d{1,3}[- ]?)?\d{10}$/.test(mobile))) {
-            //     res.status(400).send({status: false, message: `Mobile should be a valid Mobile Number`})
-            //     return
-            // }
-
-            if (!validator.isValidObjectId(collegeId)) {
-                return res.status(400).send({ status: false, message: 'The College Id Is Invalid' })
-
+            if(!(/^(\+\d{1,3}[- ]?)?\d{10}$/.test(mobile))) {
+                return res.status(400).send({status: false, message: `Mobile number is not valid, Please provide a valid mobile number`})  
             }
+
+            //Checking whether the entered email & mobile no. is already used or not.
             const isEmailAlreadyUsed = await internModel.findOne({ email });
             if (isEmailAlreadyUsed) {
                 return res.status(400).send({ status: false, message: `${email} is already in used` });
@@ -61,7 +51,7 @@ const createIntern = async function (req, res) {
             //saving data in database
             let find = await collegeModel.findById(collegeId)
             if (!find) {
-                res.status(400).send({ status: false, message: 'The College Id Is Wrong' })
+                res.status(404).send({ status: false, message: 'The College Id Is Wrong' })
             }
             else {
                 let savedData = await internModel.create(data);
@@ -72,6 +62,7 @@ const createIntern = async function (req, res) {
         return res.status(500).send({ status: false, message: "Something went wrong", error: error.message });
     }
 }
+
 module.exports.createIntern = createIntern
 
 

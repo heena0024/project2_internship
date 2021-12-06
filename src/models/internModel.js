@@ -16,7 +16,7 @@ const internSchema = new mongoose.Schema({
         type: Number,
         validate: {
             validator: function (mobile) {
-                return /^(\+\d{1,3}[- ]?)?\d{10}$/.test(mobile)
+                return /^((\\+91-?)|0)?[0-9]{10}$/.test(mobile)
             }, message: 'Please fill a valid mobile number', isAsync: false, required: true, unique: true
         }
     },
