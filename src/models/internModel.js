@@ -9,21 +9,20 @@ const internSchema = new mongoose.Schema({
             validator: function (email) {
                 return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
             }, message: 'Please fill a valid email address', isAsync: false,
-            unique: true, required: true
+             required: true,unique: true
         }
     },
     mobile: {
         type: Number,
         validate: {
             validator: function (mobile) {
-                return /^((\\+91-?)|0)?[0-9]{10}$/.test(mobile)
-            }, message: 'Please fill a valid mobile number', isAsync: false, required: true, unique: true
+                return !/^\+(?:[0-9] ?){10,13}[0-9]$/.test(mobile)
+            }, message: 'Please fill a valid mobile number', isAsync: false, required: true , unique: true
         }
     },
     collegeId: {
         type: ObjectId,
-        ref: 'College',
-        required:true
+        ref: 'College'
     },
     isDeleted: { type: Boolean, default: false }
 

@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const ObjectId = mongoose.Schema.Types.ObjectId
-
 
 //validation checking function 
 const isValid = function (value) {
