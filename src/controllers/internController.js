@@ -60,7 +60,7 @@ const createIntern = async function (req, res) {
       }
 
       //MOBILE VALIDATION
-      if (/^\+(?:[0-9] ?){10,14}[0-9]$/.test(mobile)) {
+      if (!/^\+(?:[0-9] ?){10,12}[0-9]$/.test(mobile)) {
         return res.status(400).send({
           status: false,
           message: `Mobile number is not valid, Please provide a valid mobile number`,
@@ -83,51 +83,28 @@ const createIntern = async function (req, res) {
 
       //saving data in database
 
-      let find = await collegeModel.findOne({ name: collegeName });
+      let find = await collegeModel.findOne({$or:[{ name: collegeName },{fullName:collegeName}]})
       if (!find) {
-        let CollegeName = collegeName.toLowerCase(); //converting college name to lowercase because college name's abbreviation should be in lowercase.
-        let againFind = await collegeModel.findOne({ name: CollegeName });
-        if (!againFind) {
-          let check = await collegeModel.findOne({ fullName: collegeName });
-          if (!check) {
-            return res.status(400).send({
-              status: false,
-              message:
-                "The College Name Is Wrong. PLease enter the correct college name.",
-            });
+          let CollegeName = collegeName.toLowerCase()
+          let againFind = await collegeModel.findOne({ name: CollegeName })
+          if (!againFind) {
+              return res.status(400).send({ status: false, message: 'The College Name Is Wrong' })                   
           } else {
-            let collegeId = check._id;
-            data["collegeId"] = collegeId;
-            let savedData = await internModel.create(data);
-            res.status(201).send({
-              status: true,
-              message: "Successfully saved intern details",
-              data: savedData,
-            });
-            return;
+              let collegeId = againFind._id
+              data["collegeId"] = collegeId
+              let savedData = await internModel.create(data)
+              res.status(201).send({ status: true, message: "Successfully saved intern details", data: savedData })
+              return
           }
-        } else {
-          let collegeId = againFind._id;
-          data["collegeId"] = collegeId;
-          let savedData = await internModel.create(data);
-          res.status(201).send({
-            status: true,
-            message: "Successfully saved intern details",
-            data: savedData,
-          });
-          return;
-        }
-      } else {
-        let collegeId = find._id;
-        data["collegeId"] = collegeId;
-        let savedData = await internModel.create(data);
-        res.status(201).send({
-          status: true,
-          message: "Successfully saved intern details",
-          data: savedData,
-        });
-        return;
       }
+      else {
+          let collegeId = find._id
+          data["collegeId"] = collegeId
+          let savedData = await internModel.create(data)
+          res.status(201).send({ status: true, message: "Successfully saved intern details", data: savedData })
+          return
+      }
+
     }
   } catch (error) {
     return res.status(500).send({

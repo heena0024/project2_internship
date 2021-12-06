@@ -46,9 +46,10 @@ const createCollege = async function (req, res) {
 const getCollegeDetails = async function (req, res) {
     try {
         let collegeName = req.query.collegeName
+        const lowerCollegeName = collegeName.toLowerCase()
         if (!collegeName) return res.status(404).send({ status: false, message: "Query not found, Please provide a valid query to fetch details" })
         else {
-            let college = await collegeModel.findOne({ name: collegeName });
+            let college = await collegeModel.findOne({ name: lowerCollegeName });
             if (!college) {
                 res.status(404).send({ status: false, message: "Please provide a valid college name to search interns." })
                 return
