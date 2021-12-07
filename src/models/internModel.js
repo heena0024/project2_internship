@@ -6,18 +6,25 @@ const internSchema = new mongoose.Schema({
     email: {
         type: String,
         validate: {
-            validator: function (email) {
+            validator: function(email) {
                 return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
-            }, message: 'Please fill a valid email address', isAsync: false,
-             required: true,unique: true
+            },
+            message: 'Please fill a valid email address',
+            isAsync: false,
+            required: true,
+            unique: true
         }
     },
     mobile: {
-        type: Number,
+        type: String,
         validate: {
-            validator: function (mobile) {
+            validator: function(mobile) {
                 return /^(\+\d{1,3}[- ]?)?\d{10}$/.test(mobile)
-            }, message: 'Please fill a valid mobile number', isAsync: false, required: true , unique: true
+            },
+            message: 'Please fill a valid mobile number',
+            isAsync: false,
+            required: true,
+            unique: true
         }
     },
     collegeId: {
