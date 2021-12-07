@@ -21,7 +21,7 @@ const createIntern = async function (req, res) {
         //Validating name
         return res.status(404).send({
           status: false,
-          message: "Name is required. Please provide a valid name.",
+          message: "Name is required. Please provide a valid name to continue.",
         });
       }
 
@@ -30,7 +30,7 @@ const createIntern = async function (req, res) {
         return res.status(404).send({
           status: false,
           message:
-            "Email Id is required. Please provide a valid email address.",
+            "Email Id is required. Please provide a valid email address to continue.",
         });
       }
 
@@ -39,15 +39,16 @@ const createIntern = async function (req, res) {
         return res.status(404).send({
           status: false,
           message:
-            "Mobile number is required. Please provide a valid mobile number",
+            "Mobile number is required. Please provide a valid mobile number to continue.",
         });
       }
 
       if (!validator.isValid(collegeName)) {
+        //validating collegeName
         return res.status(404).send({
           status: false,
           message:
-            "The college name is required, Please enter a valid college name",
+            "College name is required, Please enter a valid college name to continue.",
         });
       }
 
@@ -55,56 +56,74 @@ const createIntern = async function (req, res) {
       if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
         return res.status(400).send({
           status: false,
-          message: `Email is not valid. Please provide a valid Email address.`,
+          message: `${email} is not a valid email. Please provide a valid Email address to continue.`,
         });
       }
 
-      //MOBILE VALIDATION
-      if (!/^\+(?:[0-9] ?){10,12}[0-9]$/.test(mobile)) {
+      //MOBILE NUMBER VALIDATION
+      if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(mobile)) {
         return res.status(400).send({
           status: false,
-          message: `Mobile number is not valid, Please provide a valid mobile number`,
+          message: `${mobile} is not a valid mobile number, Please provide a valid mobile number to continue`,
         });
       }
 
       //Checking whether the entered email & mobile no. is already used or not.
+
       const isEmailAlreadyUsed = await internModel.findOne({ email });
       if (isEmailAlreadyUsed) {
         return res
           .status(400)
-          .send({ status: false, message: `${email} is already in used` });
+          .send({ status: false, message: `${email} is already used by somebody else` });
       }
       const isMobileAlreadyUsed = await internModel.findOne({ mobile });
       if (isMobileAlreadyUsed) {
         return res
           .status(400)
-          .send({ status: false, message: `${mobile} is already in used` });
+          .send({ status: false, message: `${mobile} is already used by somebody else` });
       }
+
+      const trimName = name.trim(); //removing unneccesary spaces from name.
+      data["name"] = trimName;
 
       //saving data in database
-
-      let find = await collegeModel.findOne({$or:[{ name: collegeName },{fullName:collegeName}]})
+      let find = await collegeModel.findOne({
+        $or: [{ name: collegeName }, { fullName: collegeName.trim() }],
+      }); //Accepting the trimed value of collegeName.
       if (!find) {
-          let CollegeName = collegeName.toLowerCase()
-          let againFind = await collegeModel.findOne({ name: CollegeName })
-          if (!againFind) {
-              return res.status(400).send({ status: false, message: 'The College Name Is Wrong' })                   
-          } else {
-              let collegeId = againFind._id
-              data["collegeId"] = collegeId
-              let savedData = await internModel.create(data)
-              res.status(201).send({ status: true, message: "Successfully saved intern details", data: savedData })
-              return
-          }
-      }
-      else {
-          let collegeId = find._id
-          data["collegeId"] = collegeId
-          let savedData = await internModel.create(data)
-          res.status(201).send({ status: true, message: "Successfully saved intern details", data: savedData })
-          return
-      }
+        let CollegeName = collegeName.toLowerCase().split(" ").join(""); //converting college name to lowercase and removing unneccesary spaces.
 
+        let againFind = await collegeModel.findOne({ name: CollegeName });
+        if (!againFind) {
+          return res.status(404).send({
+            status: false,
+            message: `The ${collegeName} doesn't exists`,
+          });
+        } else {
+          let collegeId = againFind._id;
+          data["collegeId"] = collegeId;
+          let college = againFind.fullName; //showing the college name in response to make it more specific.
+
+          let savedData = await internModel.create(data);
+          res.status(201).send({
+            status: true,
+            message: `Successfully applied for internship at ${college}`,
+            data: savedData,
+          });
+          return;
+        }
+      } else {
+        let collegeId = find._id;
+        let college = find.fullName;  //showing the college name in response to make it more specific.
+        data["collegeId"] = collegeId;
+        let savedData = await internModel.create(data);
+        res.status(201).send({
+          status: true,
+          message: `Successfully applied for internship at ${college}`,
+          data: savedData,
+        });
+        return;
+      }
     }
   } catch (error) {
     return res.status(500).send({

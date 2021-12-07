@@ -31,7 +31,16 @@ const createCollege = async function (req, res) {
             if (isNameAlreadyUsed) {
                 return res.status(400).send({ status: false, message: `${name} is already in used` });
             }
-
+            
+            //Removing unneccesary spaces from the string.
+            const Name = name.toLowerCase().split(" ").join('')
+            const trimFullName = fullName.trim()
+            const trimLogoLink = logoLink.trim()
+            
+            data["name"] = Name
+            data["fullName"] = trimFullName
+            data["logoLink"] = trimLogoLink
+           
             //saving data in database
             let savedData = await collegeModel.create(data);
             return res.status(201).send({ status: true, message: "College saved Successfully", data: savedData });
@@ -72,7 +81,7 @@ const getCollegeDetails = async function (req, res) {
                         logoLink: logoLink,
                         interests: InternsApplied
                     }
-                    res.status(200).send({ status: true, message: "Successfully fetched all interns details with this college.", data: Data })
+                    res.status(200).send({ status: true, message: `Successfully fetched all interns details of ${fullName}`, data: Data })
                 }
             }
         }
