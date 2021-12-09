@@ -2,11 +2,14 @@ const express = require('express');
 var bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const route = require('./routes/route.js');
+var multer = require('multer');
 
 const app = express();
 
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(multer().any());
 
 mongoose.connect("mongodb+srv://users-open-to-all:hiPassword123@cluster0.uh35t.mongodb.net/Group12-DB?retryWrites=true&w=majority", {useNewUrlParser: true})
     .then(() => console.log('MongoDB is ready for action !'))
