@@ -8,7 +8,7 @@ const createIntern = async function (req, res) {
     let data = req.body;
     if (!validator.isValidRequestBody(data)) {
       //validating whether data is given in request body or not
-      return res.status(404).send({
+      return res.status(400).send({
         status: false,
         message:
           "No intern details given. Please provide an intern's details to proceed further.",
@@ -19,7 +19,7 @@ const createIntern = async function (req, res) {
 
       if (!validator.isValid(name)) {
         //Validating name
-        return res.status(404).send({
+        return res.status(400).send({
           status: false,
           message: "Name is required. Please provide a valid name to continue.",
         });
@@ -27,7 +27,7 @@ const createIntern = async function (req, res) {
 
       if (!validator.isValid(email)) {
         //Validating email
-        return res.status(404).send({
+        return res.status(400).send({
           status: false,
           message:
             "Email Id is required. Please provide a valid email address to continue.",
@@ -36,7 +36,7 @@ const createIntern = async function (req, res) {
 
       if (!validator.isValid(mobile)) {
         //Validating mobile
-        return res.status(404).send({
+        return res.status(400).send({
           status: false,
           message:
             "Mobile number is required. Please provide a valid mobile number to continue.",
@@ -45,7 +45,7 @@ const createIntern = async function (req, res) {
 
       if (!validator.isValid(collegeName)) {
         //validating collegeName
-        return res.status(404).send({
+        return res.status(400).send({
           status: false,
           message:
             "College name is required, Please enter a valid college name to continue.",
@@ -61,7 +61,7 @@ const createIntern = async function (req, res) {
       }
 
       //MOBILE NUMBER VALIDATION
-      if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(mobile)) {
+      if (!/^\+?([0-9]{2})\)?[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/.test(mobile)) {
         return res.status(400).send({
           status: false,
           message: `${mobile} is not a valid mobile number, Please provide a valid mobile number to continue`,
@@ -70,13 +70,13 @@ const createIntern = async function (req, res) {
 
       //Checking whether the entered email & mobile no. is already used or not.
 
-      const isEmailAlreadyUsed = await internModel.findOne({ email });
+      const isEmailAlreadyUsed = await internModel.findOne({ email ,isDeleted:false});
       if (isEmailAlreadyUsed) {
         return res
           .status(400)
           .send({ status: false, message: `${email} is already used by somebody else` });
       }
-      const isMobileAlreadyUsed = await internModel.findOne({ mobile });
+      const isMobileAlreadyUsed = await internModel.findOne({ mobile ,isDeleted:false});
       if (isMobileAlreadyUsed) {
         return res
           .status(400)
@@ -87,15 +87,13 @@ const createIntern = async function (req, res) {
       data["name"] = trimName;
 
       //saving data in database
-      let find = await collegeModel.findOne({
-        $or: [{ name: collegeName }, { fullName: collegeName.trim() }],
-      }); //Accepting the trimed value of collegeName.
+      let find = await collegeModel.findOne({isDeleted:false,$or: [{ name: collegeName }, { fullName: collegeName.trim() }]}); //Accepting the trimed value of collegeName.
       if (!find) {
         let CollegeName = collegeName.toLowerCase().split(" ").join(""); //converting college name to lowercase and removing unneccesary spaces.
 
-        let againFind = await collegeModel.findOne({ name: CollegeName });
+        let againFind = await collegeModel.findOne({ name: CollegeName,isDeleted:false });
         if (!againFind) {
-          return res.status(404).send({
+          return res.status(400).send({
             status: false,
             message: `The ${collegeName} doesn't exists`,
           });

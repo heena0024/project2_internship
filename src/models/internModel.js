@@ -17,9 +17,10 @@ const internSchema = new mongoose.Schema({
     },
     mobile: {
         type: String,
+        trim:true,
         validate: {
             validator: function(mobile) {
-                return /^(\+\d{1,3}[- ]?)?\d{10}$/.test(mobile)
+                return  /^\+?([0-9]{2})\)?[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/.test(mobile)
             },
             message: 'Please fill a valid mobile number',
             isAsync: false,
