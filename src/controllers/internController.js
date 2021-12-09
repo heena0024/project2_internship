@@ -62,7 +62,7 @@ const createIntern = async function (req, res) {
       }
 
       //MOBILE NUMBER VALIDATION
-      if (!/^\+?([0-9]{2})\)?[-. ]?([0-9]{4})[-. ]?([0-9]{4})$/.test(mobile)) {
+      if (!/^(\+\d{1,3}[- ]?)?\d{10}$/.test(mobile)) {
         return res.status(400).send({
           status: false,
           message: `${mobile} is not a valid mobile number, Please provide a valid mobile number to continue`,
