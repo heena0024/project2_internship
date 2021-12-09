@@ -2,6 +2,7 @@ const collegeModel = require("../models/collegeModel");
 const internModel = require("../models/internModel");
 const validator = require("../validator/validator");
 
+
 //POST /functionup/colleges
 const createCollege = async function(req, res) {
     try {
